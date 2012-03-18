@@ -19,17 +19,18 @@ from siriObjects.localsearchObjects import Business, MapItem, MapItemSnippet, Ra
 googleplaces_api_key = APIKeyForAPI("google")
  
 class googlePlacesSearch(Plugin):
-     @register("en-US", "(find|show|where).* (nearest|nearby|closest) (.*)")
+     #@register("en-US", "(find|show|where).* (nearest|nearby|closest) (.*)")
+     @register("en-US", u"(搜尋附近的)(.*)")
      @register("en-GB", "(find|show|where).* (nearest|nearby|closest) (.*)")
      def googleplaces_search(self, speech, language, regex):
           self.say('Searching...',' ')
           mapGetLocation = self.getCurrentLocation()
-          latitude= mapGetLocation.latitude
-          longitude= mapGetLocation.longitude
+          latitude = mapGetLocation.latitude
+          longitude = mapGetLocation.longitude
           Title = regex.group(regex.lastindex).strip()
           Query = urllib.quote_plus(str(Title.encode("utf-8")))
           random_results = random.randint(2,15)
-          googleurl = "https://maps.googleapis.com/maps/api/place/search/json?location={0},{1}&radius=5000&name={2}&sensor=true&key={3}".format(latitude,longitude,str(Query),str(googleplaces_api_key))
+          googleurl = "https://maps.googleapis.com/maps/api/place/search/json?location={0},{1}&radius=5000&keyword={2}&sensor=true&key={3}".format(str(latitude),str(longitude),str(Query),str(googleplaces_api_key))
           try:
                jsonString = urllib2.urlopen(googleurl, timeout=20).read()
           except:
@@ -57,12 +58,14 @@ class googlePlacesSearch(Plugin):
                     count_min = min(len(response['results']),random_results)
                     count_max = max(len(response['results']),random_results)
                     view = AddViews(self.refId, dialogPhase="Completion")
-                    view.views = [AssistantUtteranceView(speakableText='I found '+str(count_max)+' '+str(Title)+' results... '+str(count_min)+' of them are fairly close to you:', dialogIdentifier="googlePlacesMap"), mapsnippet]
+                    view.views = [AssistantUtteranceView(speakableText='I found '+str(count_max)+' query results... '+str(count_min)+' of them are fairly close to you:', dialogIdentifier="googlePlacesMap"), mapsnippet]
                     self.sendRequestWithoutAnswer(view)
                else:
-                    self.say("I'm sorry but I did not find any results for "+str(Title)+" near you!")
+                    self.say("Sorry, I cannot found it. Your location is: ("+str(latitude)+","+str(longitude)+")")	
+                    #self.say("I'm sorry but I did not find any results for "+str(Title)+" near you!")
           else:
-               self.say("I'm sorry but I did not find any results for "+str(Title)+" near you!")
+               self.say('Could not establish a conenction to Googlemaps','Error')
+               #self.say("I'm sorry but I did not find any results for "+str(Title)+" near you!")
           self.complete_request()
      def haversine_distance(self, lat1, lon1, lat2, lon2):
           RAD_PER_DEG = 0.017453293
