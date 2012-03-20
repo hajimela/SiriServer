@@ -7,5 +7,6 @@
 *.cnf
 .DS_Store
 apiKeys.conf
+plugins.conf
 *~
 *.orig
